@@ -2,14 +2,40 @@ import { useState, useEffect } from 'react'
 
 export default function Pokemon() {
   const [pokémon, setPokémon] = useState('pikachu')
+  const [img, setImg] = useState(null)
+  const [error, setError] = useState(null)
+  let message = ('Saying hi to ' + pokémon).substr(0, 30)
+
+  useEffect(() => {
+
+    document.title = message
+  }, [message]) //is state, uses state, changes state
+//on effect
+
+//[] => effect is called on initial render
+//[variable] => effect is called on initial render + with variable changes
+//no array => effect is called on render and every state change
+useEffect(() => { 
+  fetch( `https://pokeapi.co/api/v2/pokemon/${pokémon}/` ) 
+  .then((res) => res.json()) 
+  .then((res) => { setImg(res.sprites.front_default)
+   }) 
+  .catch((emAll) => { 
+    setError(emAll) }) 
+  },
+     [pokémon])
+  
 
   return (
     <>
-      <div>
+      <div  className="pokemon">
         <div>
           <input onChange={(e) => setPokémon(e.target.value)} defaultValue={pokémon} type="text" />
         </div>
         <span>Hello, {pokémon}!</span>
+   
+        {img !== null && <img src={img} />}
+
       </div>
 
       <style jsx>

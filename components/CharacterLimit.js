@@ -8,17 +8,37 @@ import { useState } from 'react'
 // Note: Notice the CSS classes for if the input is too long!
 
 const CharacterLimitInput = ({ text, defaults }) => {
+  const [message, setMessage] = useState('')
   const maxLength = 140
 
   return (
-    <div className="counterInput">
+    <div className={`counterInput ${message.length > maxLength ? 'tooLong': ''}`}
+      >
       <div>
         {defaults.map((b) => {
-          return <button key={b}>{b}</button>
+          return (
+          <button  
+            key={b}
+            onClick={() =>{
+              setMessage(message + b)
+            }}
+            >
+            {b}
+          
+          </button>
+          )
         })}
       </div>
-      <textarea placeholder={text} />
-      <div>0/{maxLength}</div>
+      <textarea 
+        placeholder={text}
+        value={message}
+        onChange={(event) => {
+        setMessage(event.target.value)
+        }} 
+       />
+      <div>
+        {message.length}/{maxLength}
+      </div>
     </div>
   )
 }

@@ -10,10 +10,23 @@ import { useState } from 'react'
 
 // Bonus points: Try making it so the look of the badge changes somehow
 // when you hover over it, perhaps an x for if you're about to dismiss it?
+const Badge = ({ children, color, dismissable }) => {
+  const [dismissed, setDismissed] = useState(false)
 
-const Badge = () => {
-  return <span>Hello, world!</span>
+  if (dismissed) return null
+
+  return (
+    <span
+      className={`badge ${color}`}
+      onClick={() => {
+        if (dismissable) setDismissed(true)
+      }}
+    >
+      {children}
+    </span>
+  )
 }
+
 
 export default function BadgeList() {
   return (

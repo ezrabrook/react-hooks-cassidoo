@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useReducer } from 'react'
 import friendlyWords from 'friendly-words'
+import { createContext } from 'react/cjs/react.production.min'
 
 let backgrounds = [
   'Noble',
@@ -22,20 +23,68 @@ function randomName() {
   return string.charAt(0).toUpperCase() + string.slice(1)
 }
 
+function useMyReducer() {
+  let [state, dispatch] = useReducer(
+    (state, action) => {
+      switch (action.type) {
+        case 'TOGGLE_DARK_MODE' :{
+          return {
+            ...state, 
+            darkMode: !state.darkMode,
+          }
+        }
+        case 'BG_SELECT' : {
+          return {
+            ...state,
+            background: action.value,
+            error: !backgrounds.includes(action.value)
+            ? 'This background does NOT exist'
+            : null,
+          }
+        }
+        case 'NAME_CHARACTER' : {
+          return {
+            ...state, 
+            name: action.name,
+            error: 
+              action.name.length > 15
+              ? 'That name is way too long, bucko'
+              : null,
+          }
+        }
+        case 'RANDOM_VALUES' : {
+          return {
+            ...state, 
+            name: randomName(), 
+            background: randomBackground(),
+          }
+        }
+        case 'DISMISS_ERROR': {
+          return { 
+            ...state, 
+            error: null
+          }
+        }
+        default: {
+          return state
+        }
+      }
+    }, 
+    {
+      darkMode: false, 
+      name: '', 
+      background: '', 
+      error: null,
+    }
+  )
+  return [state, dispatch]
+}
+
 export default function App() {
-  let [darkMode, setDarkMode] = useState(false)
-  let [name, setName] = useState('')
-  let [background, setBackground] = useState('')
-  let [error, setError] = useState(null)
+ let [{ darkMode, name, background, error}, dispatch] = useMyReducer()
 
   function handleBackgroundSelect(event) {
-    let value = event.target.value
-    setBackground(value)
-    if (!backgrounds.includes(value)) {
-      setError('This background does NOT exist.')
-    } else {
-      setError(null)
-    }
+    dispatch({ type: 'BG_SELECT', value: event.target.value})
   }
 
   return (
@@ -43,7 +92,7 @@ export default function App() {
       <div className={`App ${darkMode ? 'darkmode' : ''}`}>
         <button
           onClick={() => {
-            setDarkMode(!darkMode)
+          dispatch({ type: 'TOGGLE_DARK_MODE'})
           }}
         >
           Dark Mode {darkMode ? 'ON' : 'OFF'}
@@ -54,10 +103,10 @@ export default function App() {
           placeholder="Type your name"
           value={name}
           onChange={(event) => {
-            setName(event.target.value)
-            if (event.target.value.length > 15) {
-              setError('Name is WAY too long, bucko.')
-            }
+            dispatch({
+              type: 'NAME_CHARACTER', 
+              name: event.target.value,
+            })
           }}
         />
         <select value={background} onChange={handleBackgroundSelect}>
@@ -70,7 +119,7 @@ export default function App() {
             {error}
             <button
               onClick={() => {
-                setError(null)
+               dispatch({ type: 'DISMISS_ERROR'})
               }}
             >
               Dismiss
@@ -83,8 +132,7 @@ export default function App() {
         </div>
         <button
           onClick={() => {
-            setName(randomName())
-            setBackground(randomBackground())
+            dispatch({ type: 'RANDOM_VALUES'})
           }}
         >
           Do it all for me instead
